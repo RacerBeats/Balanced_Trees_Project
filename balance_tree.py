@@ -4,145 +4,161 @@ class Node:
         self.parent = None
         self.left = None
         self.right = None
-        self.color = "red"  # Initially, all nodes are red
+        self.color = "red"  # all nodes are red
+
 
 class RedBlackTree:
-    ''' Red-Black Tree, Psudocode edition '''
     def __init__(self):
         self.root = None
 
     def insert(self, data):
         new_node = Node(data)
-        if not self.root:
-            # First node becomes the root and is colored black
+        if self.root is None:
             self.root = new_node
-            new_node.color = "black"
+            self.root.color = "black"
             return
-            
-        # Regular binary search tree insertion
+
         current = self.root
         while True:
-            if new_node.data < current.data:
-                if not current.left:
+            if data < current.data:
+                if current.left is None:
                     current.left = new_node
                     new_node.parent = current
                     break
-                current = current.left
+                else:
+                    current = current.left
             else:
-                if not current.right:
+                if current.right is None:
                     current.right = new_node
                     new_node.parent = current
                     break
-                current = current.right
-                
-        # Fix the tree to maintain Red-Black properties
-        self._balance_after_insert(new_node)
+                else:
+                    current = current.right
 
-    def _balance_after_insert(self, node):
-        # Balance the tree after insertion
+        self._fix_insert(new_node)
+
+    def _fix_insert(self, node):
         while node != self.root and node.parent.color == "red":
-            # If parent is a left child of grandparent
-            if node.parent == node.parent.parent.left:
-                uncle = node.parent.parent.right
-                
-                # Case 1: Uncle is red
+            parent = node.parent
+            gp = parent.parent
+
+            if parent == gp.left:
+                uncle = gp.right
+
                 if uncle and uncle.color == "red":
-                    node.parent.color = "black"
+                    parent.color = "black"
                     uncle.color = "black"
-                    node.parent.parent.color = "red"
-                    node = node.parent.parent
+                    gp.color = "red"
+                    node = gp
                 else:
-                    # Case 2: Node is a right child
-                    if node == node.parent.right:
-                        node = node.parent
+                    if node == parent.right:
+                        node = parent
                         self._rotate_left(node)
-                    
-                    # Case 3: Node is a left child
                     node.parent.color = "black"
-                    node.parent.parent.color = "red"
-                    self._rotate_right(node.parent.parent)
-            
-            # If parent is a right child of grandparent (parent.parent)
+                    gp.color = "red"
+                    self._rotate_right(gp)
             else:
-                uncle = node.parent.parent.left
-                
-                # Case 1: Uncle is red
+                uncle = gp.left
+
                 if uncle and uncle.color == "red":
-                    node.parent.color = "black"
+                    parent.color = "black"
                     uncle.color = "black"
-                    node.parent.parent.color = "red"
-                    node = node.parent.parent
+                    gp.color = "red"
+                    node = gp
                 else:
-                    # Case 2: Node is a left child
-                    if node == node.parent.left:
-                        node = node.parent
+                    if node == parent.left:
+                        node = parent
                         self._rotate_right(node)
-                    
-                    # Case 3: Node is a right child
                     node.parent.color = "black"
-                    node.parent.parent.color = "red"
-                    self._rotate_left(node.parent.parent)
-                    
-        # Ensure root is always black
+                    gp.color = "red"
+                    self._rotate_left(gp)
+
         self.root.color = "black"
 
     def _rotate_left(self, node):
-        # Perform a left rotation at 'node'
-        right_child = node.right
-        node.right = right_child.left
-        
-        if right_child.left:
-            right_child.left.parent = node
-            
-        right_child.parent = node.parent
-        
-        if not node.parent:
-            self.root = right_child
+        right = node.right
+        node.right = right.left
+        if right.left is not None:
+            right.left.parent = node
+        right.parent = node.parent
+
+        if node.parent is None:
+            self.root = right
         elif node == node.parent.left:
-            node.parent.left = right_child
+            node.parent.left = right
         else:
-            node.parent.right = right_child
-            
-        right_child.left = node
-        node.parent = right_child
+            node.parent.right = right
+
+        right.left = node
+        node.parent = right
 
     def _rotate_right(self, node):
-        # Perform a right rotation at 'node'
-        left_child = node.left
-        node.left = left_child.right
-        
-        if left_child.right:
-            left_child.right.parent = node
-            
-        left_child.parent = node.parent
-        
-        if not node.parent:
-            self.root = left_child
+        left = node.left
+        node.left = left.right
+        if left.right is not None:
+            left.right.parent = node
+        left.parent = node.parent
+
+        if node.parent is None:
+            self.root = left
         elif node == node.parent.right:
-            node.parent.right = left_child
+            node.parent.right = left
         else:
-            node.parent.left = left_child
-            
-        left_child.right = node
-        node.parent = left_child
+            node.parent.left = left
 
-    def print_tree(self):
-        self._print_tree_helper(self.root)
+        left.right = node
+        node.parent = left
 
-    def _print_tree_helper(self, node):
-        if not node:
-            return
-        print(f"Node: {node.data}, Color: {node.color}")
-        self._print_tree_helper(node.left)
-        self._print_tree_helper(node.right)
+    def inorder(self, node):
+        if node is not None:
+            self.inorder(node.left)
+            print(f"{node.data} ({node.color})", end=" ")
+            self.inorder(node.right)
+
+    def print_tree(self, node, indent=""):
+        if node is not None:
+            print(indent + f"{node.data} ({node.color})")
+            if node.left is not None or node.right is not None:
+                if node.left:
+                    self.print_tree(node.left, indent + "  ")
+                else:
+                    print(indent + "  " + "None")
+                if node.right:
+                    self.print_tree(node.right, indent + "  ")
+                else:
+                    print(indent + "  " + "None")
 
 
-# Example Usage:
 tree = RedBlackTree()
-tree.insert(10)
-tree.insert(20)
-tree.insert(30)
-tree.insert(40)
-tree.insert(50)
+isbn_numbers = [
+    1835,
+    728,
+    1491,
+    377,
+    1335,
+    929,
+    1120,
+    45,
+    311,
+    1652,
+    599,
+    8,
+    1442,
+    135,
+    1527,
+    1221,
+    516,
+    110,
+    634,
+    966,
+]
 
-tree.print_tree()
+for num in isbn_numbers:
+    tree.insert(num)
+print("\n(Unsorted):")
+print(isbn_numbers)
+print("\n(Sorted):")
+tree.inorder(tree.root)
+
+print("\n\nTree Structure:")
+tree.print_tree(tree.root)
