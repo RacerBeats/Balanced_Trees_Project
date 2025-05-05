@@ -10,6 +10,7 @@ class Node:
 class RedBlackTree:
     def __init__(self):
         self.root = None
+        self.rotation_count = 0 # track rotations
 
     def insert(self, data):
         new_node = Node(data)
@@ -76,6 +77,7 @@ class RedBlackTree:
         self.root.color = "black"
 
     def _rotate_left(self, node):
+        self.rotation_count += 1 #increment count
         right = node.right
         node.right = right.left
         if right.left is not None:
@@ -93,6 +95,7 @@ class RedBlackTree:
         node.parent = right
 
     def _rotate_right(self, node):
+        self.rotation_count += 1 #increment count
         left = node.left
         node.left = left.right
         if left.right is not None:
@@ -128,6 +131,13 @@ class RedBlackTree:
                 else:
                     print(indent + "  " + "None")
 
+    def height(self, node):
+        if node is None:
+            return -1
+        left_height = self.height(node.left)
+        right_height = self.height(node.right)
+        return max(left_height, right_height) + 1
+
 
 tree = RedBlackTree()
 isbn_numbers = [
@@ -162,3 +172,8 @@ tree.inorder(tree.root)
 
 print("\n\nTree Structure:")
 tree.print_tree(tree.root)
+
+# Print the height of the tree
+print(f"\nTree Height: {tree.height(tree.root)}")
+# Print the total number of rotations
+print(f"Total Rotations: {tree.rotation_count}")
